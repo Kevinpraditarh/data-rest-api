@@ -3,11 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"maxchat/models"
+	"maxchat/utils"
 	"net/http"
 	"strings"
 )
 
 var items []models.Item
+
+const dataFilePath = "./data/data.txt"
 
 func InitData(data []models.Item) {
 	items = data
@@ -45,6 +48,12 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	items = append(items, newItem)
+
+	if err := utils.SaveData(dataFilePath, items); err != nil {
+		http.Error(w, "Failed to save data", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(newItem)
 }
@@ -65,6 +74,12 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	for i, item := range items {
 		if item.Code == code {
 			items[i] = updatedItem
+
+			if err := utils.SaveData(dataFilePath, items); err != nil {
+				http.Error(w, "Failed to save data", http.StatusInternalServerError)
+				return
+			}
+
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(updatedItem)
 			return
@@ -84,6 +99,12 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	for i, item := range items {
 		if item.Code == code {
 			items = append(items[:i], items[i+1:]...)
+
+			if err := utils.SaveData(dataFilePath, items); err != nil {
+				http.Error(w, "Failed to save data", http.StatusInternalServerError)
+				return
+			}
+
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}

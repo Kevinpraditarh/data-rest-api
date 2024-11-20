@@ -14,7 +14,20 @@ func main() {
 	}
 	handlers.InitData(data)
 
-	http.HandleFunc("/items", handlers.GetItems)
+	http.HandleFunc("/items", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handlers.GetItems(w, r)
+		case http.MethodPost:
+			handlers.CreateItem(w, r)
+		case http.MethodPut:
+			handlers.UpdateItem(w, r)
+		case http.MethodDelete:
+			handlers.DeleteItem(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
 	log.Println("Server running at http://localhost:8085")
 	log.Fatal(http.ListenAndServe(":8085", nil))

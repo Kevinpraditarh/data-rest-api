@@ -34,3 +34,27 @@ func LoadData(filePath string) ([]models.Item, error) {
 	}
 	return items, scanner.Err()
 }
+
+func SaveData(filePath string, items []models.Item) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for _, item := range items {
+		line := strings.Join([]string{
+			item.Code,
+			item.Name,
+			item.Model,
+			strings.Join(item.Tech, ","),
+			item.Status,
+			item.Description,
+		}, ",")
+		_, err := file.WriteString(line + "\n")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
